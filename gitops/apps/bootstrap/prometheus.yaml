@@ -1,0 +1,50 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 76.2.1
+    chart: kube-prometheus-stack
+    helm:
+      releaseName: prometheus
+      valuesObject:
+        alertmanager:
+          enabled: false
+        grafana:
+          enabled: true
+          adminPassword: container-days
+          persistence:
+            enabled: true
+        prometheus:
+          scrapeInterval: 5s # CHANGED
+          retention: 40d
+          prometheusSpec:
+            resources:
+             limits:
+               cpu: 2000m
+               memory: 2048Mi
+             requests:
+               cpu: 2000m
+               memory: 2048Mi
+        prometheusOperator:
+          tls:
+            enabled: false
+          admissionWebhooks:
+             failurePolicy: Ignore
+             enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prometheus
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true
+      - Replace=true
