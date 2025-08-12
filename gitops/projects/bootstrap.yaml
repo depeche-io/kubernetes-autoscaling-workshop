@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/depeche-io/kubernetes-autoscaling-workshop.git
     targetRevision: main
-    path: gitops/apps/monitoring
+    path: gitops/apps/bootstrap
   destination:
     server: https://kubernetes.default.svc
     namespace: bootstrap
