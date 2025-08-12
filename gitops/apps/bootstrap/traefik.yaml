@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: traefik
+  namespace: argocd
+spec:
+  project: bootstrap
+  source:
+    repoURL: https://helm.traefik.io/traefik
+    targetRevision: 37.0.0
+    chart: traefik
+    helm:
+      releaseName: traefik
+      valuesObject:
+        deployment:
+          replicas: 1
+        providers:
+          kubernetesIngress:
+            publishedService:
+              enabled: true
+        ingressClass:
+          enabled: true
+          isDefaultClass: true
+          fallbackApiVersion: v1
+        dashboard.enabled: true
+        rbac.enabled: true
+        additionalArguments:
+          - --providers.kubernetesingress=true
+          - --accesslog=true
+          - --accesslog.format=json
+          - --serversTransport.insecureSkipVerify=true
+          - --log.level=INFO
+          - --metrics.prometheus=true
+          - --metrics.prometheus.addEntryPointsLabels=true
+          - --metrics.prometheus.addRoutersLabels=true
+          - --metrics.prometheus.addServicesLabels=true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: traefik
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: false
+    syncOptions:
+      - CreateNamespace=true
